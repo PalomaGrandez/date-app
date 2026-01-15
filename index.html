@@ -316,6 +316,11 @@
                 createdAt: new Date().toISOString()
             };
 
+            // Si hay foto al crear, también guardar la fecha de la foto
+            if (currentPhoto) {
+                idea.photoDate = new Date().toISOString();
+            }
+
             // Guardar en Firebase
             push(ideasRef, idea)
                 .then(() => {
@@ -371,7 +376,8 @@
                     if (confirm('¿Guardar esta foto?')) {
                         const ideaRef = ref(database, `ideas/${ideaId}`);
                         update(ideaRef, {
-                            photo: photoData
+                            photo: photoData,
+                            photoDate: new Date().toISOString()
                         })
                         .then(() => {
                             console.log('Foto guardada correctamente');
@@ -416,11 +422,20 @@
 
         // Crear tarjeta de idea
         function createIdeaCard(idea) {
-            const date = new Date(idea.createdAt).toLocaleDateString('es-ES', {
+            const createdDate = new Date(idea.createdAt).toLocaleDateString('es-ES', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric'
             });
+
+            let photoDate = '';
+            if (idea.photoDate) {
+                photoDate = new Date(idea.photoDate).toLocaleDateString('es-ES', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            }
 
             return `
                 <div class="idea-card ${idea.completed ? 'completed' : ''}">
@@ -428,7 +443,8 @@
                     ${idea.photo ? `<img src="${idea.photo}" class="idea-photo">` : ''}
                     <div class="idea-title">${escapeHtml(idea.title)}</div>
                     ${idea.description ? `<div class="idea-description">${escapeHtml(idea.description)}</div>` : ''}
-                    <div class="idea-date">📅 ${date}</div>
+                    <div class="idea-date">📅 Creada: ${createdDate}</div>
+                    ${photoDate ? `<div class="idea-date">📸 Realizada: ${photoDate}</div>` : ''}
                     ${!idea.photo ? `
                         <div style="margin-bottom: 15px;">
                             <input type="file" id="cardPhoto_${idea.id}" accept="image/*" capture="environment" style="display: none;" onchange="handleCardPhoto('${idea.id}', event)">
