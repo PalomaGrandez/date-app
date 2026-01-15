@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuestras Citas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .add-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .input-group input[type="text"],
+        .input-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input[type="text"]:focus,
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .input-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .photo-upload {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .photo-upload input[type="file"] {
+            display: none;
+        }
+
+        .photo-btn {
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .photo-btn:hover {
+            background: #5568d3;
+        }
+
+        .photo-preview {
+            max-width: 100px;
+            max-height: 100px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .add-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .add-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .ideas-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .idea-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .idea-card.completed {
+            opacity: 0.7;
+            background: #f0f0f0;
+        }
+
+        .idea-photo {
+            width: 100%;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .idea-title {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .idea-description {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .idea-date {
+            color: #999;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+
+        .idea-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .complete-btn {
+            background: #4caf50;
+            color: white;
+        }
+
+        .complete-btn:hover {
+            background: #45a049;
+        }
+
+        .delete-btn {
+            background: #f44336;
+            color: white;
+        }
+
+        .delete-btn:hover {
+            background: #da190b;
+        }
+
+        .status-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #4caf50;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: white;
+            padding: 40px;
+            font-size: 1.1em;
+        }
+
+        .loading {
+            text-align: center;
+            color: white;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💕 Nuestras Citas</h1>
+            <p>Ideas de dates para recordar juntos</p>
+        </div>
+
+        <div class="add-section">
+            <h2 style="margin-bottom: 20px;">Agregar Nueva Idea</h2>
+            <div class="input-group">
+                <label>Título de la cita</label>
+                <input type="text" id="ideaTitle" placeholder="Ej: Cena romántica en casa">
+            </div>
+            <div class="input-group">
+                <label>Descripción</label>
+                <textarea id="ideaDescription" placeholder="Describe la idea..."></textarea>
+            </div>
+            <div class="input-group">
+                <label>Foto (opcional)</label>
+                <div class="photo-upload">
+                    <label for="photoInput" class="photo-btn">📷 Subir foto</label>
+                    <input type="file" id="photoInput" accept="image/*">
+                    <img id="photoPreview" class="photo-preview">
+                </div>
+            </div>
+            <button class="add-btn" onclick="addIdea()">Agregar Idea</button>
+        </div>
+
+        <div id="ideasContainer" class="loading">Cargando ideas...</div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, push, onValue, update, remove } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        // Configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyAiwSo1k4d_pLzQ0JecotQcpcCIauBgp1g",
+            authDomain: "dateideas-381ae.firebaseapp.com",
+            databaseURL: "https://dateideas-381ae-default-rtdb.firebaseio.com",
+            projectId: "dateideas-381ae",
+            storageBucket: "dateideas-381ae.firebasestorage.app",
+            messagingSenderId: "535667619217",
+            appId: "1:535667619217:web:2cfd3a27a0329c3c339630"
+        };
+
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const ideasRef = ref(database, 'ideas');
+
+        // Variables globales
+        let currentPhoto = null;
+
+        // Hacer funciones accesibles globalmente
+        window.addIdea = addIdea;
+        window.toggleComplete = toggleComplete;
+        window.deleteIdea = deleteIdea;
+        window.handleCardPhoto = handleCardPhoto;
+
+        // Preview de foto
+        document.getElementById('photoInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentPhoto = e.target.result;
+                    document.getElementById('photoPreview').src = currentPhoto;
+                    document.getElementById('photoPreview').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Agregar nueva idea
+        function addIdea() {
+            const title = document.getElementById('ideaTitle').value.trim();
+            const description = document.getElementById('ideaDescription').value.trim();
+
+            if (!title) {
+                alert('Por favor escribe un título');
+                return;
+            }
+
+            const idea = {
+                title: title,
+                description: description,
+                photo: currentPhoto,
+                completed: false,
+                createdAt: new Date().toISOString()
+            };
+
+            // Guardar en Firebase
+            push(ideasRef, idea)
+                .then(() => {
+                    // Limpiar formulario
+                    document.getElementById('ideaTitle').value = '';
+                    document.getElementById('ideaDescription').value = '';
+                    document.getElementById('photoInput').value = '';
+                    document.getElementById('photoPreview').style.display = 'none';
+                    currentPhoto = null;
+                })
+                .catch((error) => {
+                    console.error('Error al guardar:', error);
+                    alert('Error al guardar la idea');
+                });
+        }
+
+        // Marcar como completada
+        function toggleComplete(ideaId) {
+            const ideaRef = ref(database, `ideas/${ideaId}`);
+            
+            // Obtener el estado actual
+            onValue(ideaRef, (snapshot) => {
+                const idea = snapshot.val();
+                if (idea) {
+                    update(ideaRef, {
+                        completed: !idea.completed
+                    });
+                }
+            }, { onlyOnce: true });
+        }
+
+        // Eliminar idea
+        function deleteIdea(ideaId) {
+            if (confirm('¿Seguro que quieres eliminar esta idea?')) {
+                const ideaRef = ref(database, `ideas/${ideaId}`);
+                remove(ideaRef)
+                    .catch((error) => {
+                        console.error('Error al eliminar:', error);
+                        alert('Error al eliminar la idea');
+                    });
+            }
+        }
+
+        // Manejar foto desde la card
+        function handleCardPhoto(ideaId, event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const photoData = e.target.result;
+                    
+                    // Mostrar preview y confirmar
+                    if (confirm('¿Guardar esta foto?')) {
+                        const ideaRef = ref(database, `ideas/${ideaId}`);
+                        update(ideaRef, {
+                            photo: photoData
+                        })
+                        .then(() => {
+                            console.log('Foto guardada correctamente');
+                        })
+                        .catch((error) => {
+                            console.error('Error al guardar foto:', error);
+                            alert('Error al guardar la foto');
+                        });
+                    } else {
+                        // Resetear el input para poder seleccionar de nuevo
+                        event.target.value = '';
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Cargar ideas en tiempo real
+        onValue(ideasRef, (snapshot) => {
+            const container = document.getElementById('ideasContainer');
+            const data = snapshot.val();
+
+            if (!data) {
+                container.innerHTML = '<div class="empty-state">Aún no hay ideas. ¡Agrega la primera! 💡</div>';
+                return;
+            }
+
+            // Convertir objeto a array
+            const ideas = Object.entries(data).map(([id, idea]) => ({
+                id,
+                ...idea
+            }));
+
+            // Ordenar por fecha (más recientes primero)
+            ideas.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+            // Renderizar
+            container.innerHTML = '<div class="ideas-list">' + 
+                ideas.map(idea => createIdeaCard(idea)).join('') + 
+                '</div>';
+        });
+
+        // Crear tarjeta de idea
+        function createIdeaCard(idea) {
+            const date = new Date(idea.createdAt).toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            return `
+                <div class="idea-card ${idea.completed ? 'completed' : ''}">
+                    ${idea.completed ? '<span class="status-badge">✓ Completada</span>' : ''}
+                    ${idea.photo ? `<img src="${idea.photo}" class="idea-photo">` : ''}
+                    <div class="idea-title">${escapeHtml(idea.title)}</div>
+                    ${idea.description ? `<div class="idea-description">${escapeHtml(idea.description)}</div>` : ''}
+                    <div class="idea-date">📅 ${date}</div>
+                    ${!idea.photo ? `
+                        <div style="margin-bottom: 15px;">
+                            <input type="file" id="cardPhoto_${idea.id}" accept="image/*" capture="environment" style="display: none;" onchange="handleCardPhoto('${idea.id}', event)">
+                            <label for="cardPhoto_${idea.id}" class="action-btn" style="display: block; text-align: center; background: #667eea; color: white; cursor: pointer;">
+                                📷 Agregar foto del momento
+                            </label>
+                        </div>
+                    ` : `
+                        <div style="margin-bottom: 15px;">
+                            <input type="file" id="cardPhoto_${idea.id}" accept="image/*" capture="environment" style="display: none;" onchange="handleCardPhoto('${idea.id}', event)">
+                            <label for="cardPhoto_${idea.id}" class="action-btn" style="display: block; text-align: center; background: #667eea; color: white; cursor: pointer;">
+                                📷 Cambiar foto
+                            </label>
+                        </div>
+                    `}
+                    <div class="idea-actions">
+                        ${!idea.completed ? 
+                            `<button class="action-btn complete-btn" onclick="toggleComplete('${idea.id}')">Marcar como hecha</button>` :
+                            `<button class="action-btn complete-btn" onclick="toggleComplete('${idea.id}')">Marcar pendiente</button>`
+                        }
+                        <button class="action-btn delete-btn" onclick="deleteIdea('${idea.id}')">Eliminar</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Escapar HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
